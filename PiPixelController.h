@@ -22,7 +22,7 @@ typedef struct __string_ctrl
 typedef struct __thread_ctrl
 {
    char *buffer;
-   string_ctrl led_string[2];
+   string_ctrl led_string[4];
 } thread_ctrl;
 
 

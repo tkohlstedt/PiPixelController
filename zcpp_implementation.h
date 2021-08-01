@@ -6,6 +6,7 @@ typedef struct _zcppParam
     int universeStart;
     int universeEnd;
     char *buffer;
+    thread_ctrl *hwconfig;
 } zcppParam;
 
 void *zcpp_multicast_listen(void *listen_parameters);

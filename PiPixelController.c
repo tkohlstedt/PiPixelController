@@ -57,22 +57,22 @@ int main()
     spi_stat = spi_init(&spi0_1_dev);
     printf("SPI Init returned %i \n\r",spi_stat);
 
-    spi_device spi3_dev = {
+    spi_device spi0_2_dev  = {
         .rpi_hw = rpi_hw,
-        .spi_bus = 3,
-        .spi_cs  = 0,
+        .spi_bus = 0,
+        .spi_cs = 2,
         .count = MAX_CHANNELS_PER_DEVICE,
     };
-    spi_stat = spi_init(&spi3_dev);
+    spi_stat = spi_init(&spi0_2_dev);
     printf("SPI Init returned %i \n\r",spi_stat);
 
-    spi_device spi3_1_dev = {
+    spi_device spi0_3_dev = {
         .rpi_hw = rpi_hw,
-        .spi_bus = 3,
-        .spi_cs  = 1,
+        .spi_bus = 0,
+        .spi_cs  = 3,
         .count = MAX_CHANNELS_PER_DEVICE,
     };
-    spi_stat = spi_init(&spi3_1_dev);
+    spi_stat = spi_init(&spi0_3_dev);
     printf("SPI Init returned %i \n\r",spi_stat);
 
     config_init(&cfg);
@@ -117,19 +117,13 @@ int main()
 
     // start the listener
     return_val = pthread_create(&threads[0],NULL,acn_listen,(void *)&listen_param);
-
-    // start the ZCPP multicast listener
-    zcpp_listen_param.buffer = pixelBuffer;
-    return_val = pthread_create(&threads[1],NULL,zcpp_multicast_listen,&zcpp_listen_param );
-
-    // start the ZCPP unicast listener
-//   return_val = pthread_create(&threads[2],NULL,zcpp_listen,&zcpp_listen_param);
+    printf("ACN start returned %i \n\r",return_val);
 
     // read the channel configurations from the config file
-    for(int bus_ctr =0;bus_ctr<2;bus_ctr++)
+    for(int bus_ctr =0;bus_ctr<1;bus_ctr++)
     {
         memset(&workers[bus_ctr],0,sizeof(thread_ctrl));
-        for(int cs_ctr = 0;cs_ctr<2;cs_ctr++)
+        for(int cs_ctr = 0;cs_ctr<4;cs_ctr++)
         {
             sprintf(cfg_path,"bus%d.cs%d",bus_ctr,cs_ctr);
                     setting = config_lookup(&cfg, cfg_path);
@@ -153,7 +147,6 @@ int main()
                     printf("%3d  %3d  %3d  %3d  %3d\n", bus_ctr,cs_ctr,led_str,start_channel,channel_count);
                 }
             }
-
         }
     }
 
@@ -161,15 +154,20 @@ int main()
     workers[0].buffer = pixelBuffer;
     workers[0].led_string[0].spi_dev = &spi0_0_dev;
     workers[0].led_string[1].spi_dev = &spi0_1_dev;
+    workers[0].led_string[2].spi_dev = &spi0_2_dev;
+    workers[0].led_string[3].spi_dev = &spi0_3_dev;
+    
     return_val = pthread_create(&threads[3],NULL,worker,(void *)&workers[0]);
     printf("Worker 0 returned %i \n\r",return_val);
 
-    workers[1].buffer = pixelBuffer;
-    workers[1].led_string[0].spi_dev = &spi3_dev;
-    workers[1].led_string[1].spi_dev = &spi3_1_dev;
- //   return_val = pthread_create(&threads[4],NULL,worker,(void *)&workers[1]);
+    // start the ZCPP multicast listener
+    zcpp_listen_param.buffer = pixelBuffer;
+    zcpp_listen_param.hwconfig = &workers[0];
+    return_val = pthread_create(&threads[1],NULL,zcpp_multicast_listen,&zcpp_listen_param );
+    printf("ZCPP start returned %i \n\r",return_val);
 
-    printf("Worker 1 returned %i \n\r",return_val);
+    // start the ZCPP unicast listener
+//   return_val = pthread_create(&threads[2],NULL,zcpp_listen,&zcpp_listen_param);
 
     while(1)
     {

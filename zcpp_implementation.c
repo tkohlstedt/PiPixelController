@@ -142,7 +142,7 @@ printf("My ip %i \n\r",response_packet->ipv4Address);
 
 }
 
-void zcpp_process_config(ZCPP_packet_t *data)
+void zcpp_process_config(ZCPP_packet_t *data,thread_ctrl *hwconfig)
 {
     printf("Recieved config packet %i\n\r",ntohs(data->Configuration.sequenceNumber));
     printf("Config count %i\n\r",data->Configuration.ports);
@@ -151,6 +151,10 @@ void zcpp_process_config(ZCPP_packet_t *data)
         printf("Port : %i Channels: %i  Protocol: %i String: %i Start Channel: %i \n\r",data->Configuration.PortConfig[a].port,ntohl(data->Configuration.PortConfig[a].channels),
         data->Configuration.PortConfig[a].protocol,data->Configuration.PortConfig[a].string,
         ntohl(data->Configuration.PortConfig[a].startChannel));
+
+        hwconfig->led_string[data->Configuration.PortConfig[a].port].channel_count[data->Configuration.PortConfig[a].string] = ntohl(data->Configuration.PortConfig[a].channels);
+        hwconfig->led_string[data->Configuration.PortConfig[a].port].start_channel[data->Configuration.PortConfig[a].string] = ntohl(data->Configuration.PortConfig[a].startChannel);
+
     }
 }
 void zcpp_process_extra_data(ZCPP_packet_t *data)
@@ -206,7 +210,7 @@ void *zcpp_multicast_listen(void *listen_parameters)
                     zcpp_send_discovery_response(multi_packet,servaddr);
                     break;
                 case ZCPP_TYPE_CONFIG:
-                    zcpp_process_config(multi_packet);
+                    zcpp_process_config(multi_packet,(thread_ctrl*)((zcppParam*)params->hwconfig));
                     break;
                 case ZCPP_TYPE_EXTRA_DATA:
                     zcpp_process_extra_data(multi_packet);
@@ -258,7 +262,7 @@ void *zcpp_listen(void *listen_parameters)
                     zcpp_send_discovery_response(zcpp_packet,servaddr);
                     break;
                 case ZCPP_TYPE_CONFIG:
-                    zcpp_process_config(zcpp_packet);
+                    zcpp_process_config(zcpp_packet,(thread_ctrl*)((zcppParam*)params->hwconfig));
                     break;
                 case ZCPP_TYPE_EXTRA_DATA:
                     zcpp_process_extra_data(zcpp_packet);
