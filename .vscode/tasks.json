@@ -1,0 +1,28 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "C/C++: aarch64-linux-gnu-gcc build active file",
+			"command": "/usr/bin/aarch64-linux-gnu-gcc",
+			"args": [
+				"-g",
+				"*.c",
+				"-o",
+				"${fileDirname}/${fileBasenameNoExtension}",
+				"-l",
+				"pthread",
+				"-l",
+				"config"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build",
+			"detail": "compiler: /usr/bin/aarch64-linux-gnu-gcc"
+		}
+	]
+}
