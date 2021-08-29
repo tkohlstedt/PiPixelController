@@ -1,0 +1,1 @@
+/usr/bin/gcc -g *.c -o /home/ubuntu/PiPixelController/PiPixelController -l pthread -l config
