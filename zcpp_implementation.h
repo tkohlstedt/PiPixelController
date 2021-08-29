@@ -5,6 +5,7 @@ typedef struct _zcppParam
 {
     int universeStart;
     int universeEnd;
+    char controller_name[32];
     char *buffer;
     thread_ctrl *hwconfig;
 } zcppParam;

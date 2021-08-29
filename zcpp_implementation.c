@@ -83,7 +83,7 @@ int zcpp_multicast_init()
 }
 
 
-void zcpp_send_discovery_response(ZCPP_packet_t *data, struct sockaddr_in server)
+void zcpp_send_discovery_response(ZCPP_packet_t *data, struct sockaddr_in server,char *controller_name)
 {
     int sockfd, n;
     struct sockaddr_in servaddr;
@@ -123,7 +123,7 @@ void zcpp_send_discovery_response(ZCPP_packet_t *data, struct sockaddr_in server
     response_packet->macAddress[2] = 0xFF;
     response_packet->ipv4Address = name.sin_addr.s_addr; //htonl(0xC0A8087D);
     response_packet->ipv4Mask = htonl(0xFFFFFF00);
-    strcpy(response_packet->userControllerName,"PiPixelController");
+    strcpy(response_packet->userControllerName,controller_name);
     response_packet->maxTotalChannels = htons(4800);
     response_packet->pixelPorts = 4;
     response_packet->rsPorts = 0;
@@ -207,7 +207,7 @@ void *zcpp_multicast_listen(void *listen_parameters)
             switch (multi_packet->Discovery.Header.type)
             {
                 case ZCPP_TYPE_DISCOVERY:
-                    zcpp_send_discovery_response(multi_packet,servaddr);
+                    zcpp_send_discovery_response(multi_packet,servaddr,(char *)((zcppParam*)params->controller_name) );
                     break;
                 case ZCPP_TYPE_CONFIG:
                     zcpp_process_config(multi_packet,(thread_ctrl*)((zcppParam*)params->hwconfig));
@@ -259,7 +259,7 @@ void *zcpp_listen(void *listen_parameters)
             switch (zcpp_packet->Discovery.Header.type)
             {
                 case ZCPP_TYPE_DISCOVERY:
-                    zcpp_send_discovery_response(zcpp_packet,servaddr);
+                    zcpp_send_discovery_response(zcpp_packet,servaddr,(char *)((zcppParam*)params->controller_name));
                     break;
                 case ZCPP_TYPE_CONFIG:
                     zcpp_process_config(zcpp_packet,(thread_ctrl*)((zcppParam*)params->hwconfig));

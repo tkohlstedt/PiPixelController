@@ -11,6 +11,7 @@
 #define PIXEL_BUFFER_SIZE MAX_UNIVERSES * UNIVERSE_SIZE
 #define MAX_WORKERS 10
 #define MAX_CHANNELS_PER_DEVICE 3600
+#define CONTROLLER_NAME "PiPixelController\0"
 
 typedef struct __string_ctrl
 {

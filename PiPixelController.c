@@ -31,6 +31,7 @@ config_t cfg;
 config_setting_t *setting;
 const char *str;
 int universe_start,universe_count,universe_size;
+const char *controller_name;
 
 int main()
 {
@@ -105,7 +106,16 @@ int main()
         fprintf(stderr, "No 'universe_size' setting in configuration file.\n");
         universe_size = UNIVERSE_SIZE;
     }
-
+    if(config_lookup_string(&cfg, "controller_name", &controller_name))
+    {
+        printf("Controller Name: %s\n", controller_name);
+        strncpy(zcpp_listen_param.controller_name,controller_name,32);
+    }
+    else
+    {
+        fprintf(stderr, "No 'controller_name' setting in configuration file.\n");
+        strcpy(zcpp_listen_param.controller_name, CONTROLLER_NAME);
+    }
     // allocate and clear the pixelbuffer
     pixelBuffer = malloc(universe_count * universe_size);
     memset(pixelBuffer,0,universe_count * universe_size);
