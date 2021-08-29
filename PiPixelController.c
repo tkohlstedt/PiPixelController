@@ -154,8 +154,8 @@ int main()
     workers[0].buffer = pixelBuffer;
     workers[0].led_string[0].spi_dev = &spi0_0_dev;
     workers[0].led_string[1].spi_dev = &spi0_1_dev;
-    workers[0].led_string[2].spi_dev = &spi0_2_dev;
-    workers[0].led_string[3].spi_dev = &spi0_3_dev;
+    workers[0].led_string[3].spi_dev = &spi0_2_dev;
+    workers[0].led_string[2].spi_dev = &spi0_3_dev;
     
     return_val = pthread_create(&threads[3],NULL,worker,(void *)&workers[0]);
     printf("Worker 0 returned %i \n\r",return_val);
