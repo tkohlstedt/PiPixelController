@@ -23,11 +23,13 @@ int spi_init(spi_device *spi_dev)
     uint32_t speed = TARGET_FREQ * 6;
     char devname[20];
 
+/*
     int pins[7] = {10,0,0,2,6,14,20};
     int functions[7] = {0,0,0,3,3,3,3};
 
     uint32_t base = spi_dev->rpi_hw->periph_base;
     int pinnum = pins[spi_dev->spi_bus];
+ */
     sprintf(devname,"/dev/spidev%i.%i",spi_dev->spi_bus,spi_dev->spi_cs);
     printf("%s\n\r",devname);
 
@@ -69,13 +71,14 @@ int spi_init(spi_device *spi_dev)
     }
 
         // Set SPI-MOSI pin
+/*
     gpio = mapmem(GPIO_OFFSET + base, sizeof(gpio_t), DEV_GPIOMEM);
     if (!gpio)
     {
         return -1;
     }
     gpio_function_set(gpio, pinnum, functions[spi_dev->spi_bus]);	// SPI-MOSI ALT0
-  
+*/
     // Allocate SPI transmit buffer
  /*
     spi_dev->buffer = malloc((MAX_BUFFER_SIZE));
