@@ -12,6 +12,8 @@
 
 #define ETH_BUFFER_SIZE 1500
 
+int last_config_sequence = 0;
+
 // Initialize the unicast socket
 int zcpp_init()
 {
@@ -146,6 +148,18 @@ void zcpp_process_config(ZCPP_packet_t *data,thread_ctrl *hwconfig)
 {
     printf("Recieved config packet %i\n\r",ntohs(data->Configuration.sequenceNumber));
     printf("Config count %i\n\r",data->Configuration.ports);
+    // Clear out existing channel mappings
+    if(last_config_sequence != ntohs(data->Configuration.sequenceNumber))
+    {
+        last_config_sequence = ntohs(data->Configuration.sequenceNumber);
+        for(int p = 0;p<4;p++){
+            for(int s = 0;s<8;s++){
+                hwconfig->led_string[p].channel_count[s] = 0;
+                hwconfig->led_string[p].start_channel[s] = 0;
+            }
+        }
+    }
+    // Set new channel mappings based on config packet
     for(int a =0;a<data->Configuration.ports;a++)
     {
         printf("Port : %i Channels: %i  Protocol: %i String: %i Start Channel: %i \n\r",data->Configuration.PortConfig[a].port,ntohl(data->Configuration.PortConfig[a].channels),
