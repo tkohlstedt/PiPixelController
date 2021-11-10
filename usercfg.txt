@@ -1,0 +1,9 @@
+# Place "config.txt" changes (dtparam, dtoverlay, disable_overscan, etc.) in
+# this file. Please refer to the README file for a description of the various
+# configuration files on the boot partition.
+# force the core frequency to stay stable even at idle
+core_freq=500
+core_freq_min=500
+#total_mem=1024
+# enable additional SPIs
+dtoverlay=spi0-4cs
