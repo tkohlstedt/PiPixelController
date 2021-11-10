@@ -32,6 +32,11 @@ config_setting_t *setting;
 const char *str;
 int universe_start,universe_count,universe_size;
 const char *controller_name;
+int pixel_port_count;
+spi_device spi0_0_dev;
+spi_device spi0_1_dev;
+spi_device spi0_2_dev;
+spi_device spi0_3_dev;
 
 int main()
 {
@@ -39,46 +44,10 @@ int main()
     rpi_hw = rpi_hw_detect();
     printf("%s\n\r",rpi_hw->desc);
 
-    // Initialize the SPIs
-    spi_device spi0_0_dev  = {
-        .rpi_hw = rpi_hw,
-        .spi_bus = 0,
-        .spi_cs = 0,
-        .count = MAX_CHANNELS_PER_DEVICE,
-    };
-    int spi_stat = spi_init(&spi0_0_dev);
-    printf("SPI Init returned %i \n\r",spi_stat);
-
-    spi_device spi0_1_dev = {
-        .rpi_hw = rpi_hw,
-        .spi_bus = 0,
-        .spi_cs  = 1,
-        .count = MAX_CHANNELS_PER_DEVICE,
-    };
-    spi_stat = spi_init(&spi0_1_dev);
-    printf("SPI Init returned %i \n\r",spi_stat);
-
-    spi_device spi0_2_dev  = {
-        .rpi_hw = rpi_hw,
-        .spi_bus = 0,
-        .spi_cs = 2,
-        .count = MAX_CHANNELS_PER_DEVICE,
-    };
-    spi_stat = spi_init(&spi0_2_dev);
-    printf("SPI Init returned %i \n\r",spi_stat);
-
-    spi_device spi0_3_dev = {
-        .rpi_hw = rpi_hw,
-        .spi_bus = 0,
-        .spi_cs  = 3,
-        .count = MAX_CHANNELS_PER_DEVICE,
-    };
-    spi_stat = spi_init(&spi0_3_dev);
-    printf("SPI Init returned %i \n\r",spi_stat);
 
     config_init(&cfg);
     /* Read the file. If there is an error, report it and exit. */
-    if(! config_read_file(&cfg, "/home/ubuntu/PiPixelController/PiPixelController.cfg"))
+    if(! config_read_file(&cfg, "/etc/PiPixelController.cfg"))
     {
         fprintf(stderr, "%s:%d - %s\n", config_error_file(&cfg),
                 config_error_line(&cfg), config_error_text(&cfg));
@@ -116,14 +85,60 @@ int main()
         fprintf(stderr, "No 'controller_name' setting in configuration file.\n");
         strcpy(zcpp_listen_param.controller_name, CONTROLLER_NAME);
     }
+    if(config_lookup_int(&cfg,"pixel_ports",&pixel_port_count))
+        printf("Pixel ports: %i\n", pixel_port_count);
+    else
+    {
+        fprintf(stderr,"No 'pixel_ports' setting in configuration file.\n");
+        pixel_port_count = PIXEL_PORTS;
+    }
     // allocate and clear the pixelbuffer
-    pixelBuffer = malloc(universe_count * universe_size);
-    memset(pixelBuffer,0,universe_count * universe_size);
+    pixelBuffer = malloc(PIXEL_BUFFER_SIZE);
+    memset(pixelBuffer,0,PIXEL_BUFFER_SIZE);
 
     // setup the universes to listen for
     listen_param.universeStart = universe_start;
     listen_param.universeEnd = universe_start + universe_count - 1;
     listen_param.buffer = pixelBuffer;
+
+    // Initialize the SPIs
+    int spi_stat;
+    if(pixel_port_count > 0)
+    {
+        spi0_0_dev.rpi_hw = rpi_hw;
+        spi0_0_dev.spi_bus = 0;
+        spi0_0_dev.spi_cs = 0;
+        spi0_0_dev.count = MAX_CHANNELS_PER_DEVICE;
+        spi_stat = spi_init(&spi0_0_dev);
+        printf("SPI Init returned %i \n\r",spi_stat);
+    }
+    if(pixel_port_count > 1)
+    {    
+        spi0_1_dev.rpi_hw = rpi_hw;
+        spi0_1_dev.spi_bus = 0;
+        spi0_1_dev.spi_cs  = 1;
+        spi0_1_dev.count = MAX_CHANNELS_PER_DEVICE;
+        spi_stat = spi_init(&spi0_1_dev);
+        printf("SPI Init returned %i \n\r",spi_stat);
+    }
+    if(pixel_port_count >2)
+    {    
+        spi0_2_dev.rpi_hw = rpi_hw;
+        spi0_2_dev.spi_bus = 0;
+        spi0_2_dev.spi_cs = 2;
+        spi0_2_dev.count = MAX_CHANNELS_PER_DEVICE;
+        spi_stat = spi_init(&spi0_2_dev);
+        printf("SPI Init returned %i \n\r",spi_stat);
+    }
+    if(pixel_port_count>3)
+    {
+        spi0_3_dev.rpi_hw = rpi_hw,
+        spi0_3_dev.spi_bus = 0,
+        spi0_3_dev.spi_cs  = 3,
+        spi0_3_dev.count = MAX_CHANNELS_PER_DEVICE,
+        spi_stat = spi_init(&spi0_3_dev);
+        printf("SPI Init returned %i \n\r",spi_stat);
+    }
 
     // start the listener
     return_val = pthread_create(&threads[0],NULL,acn_listen,(void *)&listen_param);
@@ -161,12 +176,13 @@ int main()
     }
 
     // start the output worker(s)
+    workers[0].pixel_ports = pixel_port_count;
     workers[0].buffer = pixelBuffer;
     workers[0].led_string[0].spi_dev = &spi0_0_dev;
     workers[0].led_string[1].spi_dev = &spi0_1_dev;
     workers[0].led_string[2].spi_dev = &spi0_2_dev;
     workers[0].led_string[3].spi_dev = &spi0_3_dev;
-    
+
     return_val = pthread_create(&threads[3],NULL,worker,(void *)&workers[0]);
     printf("Worker 0 returned %i \n\r",return_val);
 
