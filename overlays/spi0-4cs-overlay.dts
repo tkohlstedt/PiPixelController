@@ -10,7 +10,7 @@
          #address-cells = <1>;
          #size-cells = <0>;
          status = "okay";
-         cs-gpios = <&gpio 8 1>, <&gpio 7 1>, <&gpio 6 1>, <&gpio 5 1>;
+         cs-gpios = <&gpio 8 1>, <&gpio 7 1>, <&gpio 13 1>, <&gpio 19 1>;
 
          spidev@2{
             compatible = "spidev";
@@ -33,7 +33,7 @@
    fragment@1 {
       target = <&spi0_cs_pins>;
       frag1: __overlay__ {
-        brcm,pins = <8 7 6 5>;
+        brcm,pins = <8 7 13 19>;
         brcm,function = <1>; /* out */
       };
    };
