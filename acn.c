@@ -87,7 +87,7 @@ int getUniverse(ACNPacket *Packet)
 // Get the number of data bytes and convert to host integer
 int getPropertyCount(ACNPacket *Packet)
 {
-	return(Packet->DMP.Properties.PropertyCountH<<8)+Packet->DMP.Properties.PropertyCountL;
+	return(Packet->DMP.Properties.PropertyCountH<<8)+Packet->DMP.Properties.PropertyCountL -1;
 }
 
 uint8_t getSequence(ACNPacket *Packet)
