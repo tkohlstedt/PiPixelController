@@ -13,6 +13,8 @@
 #define MAX_CHANNELS_PER_DEVICE 3600
 #define CONTROLLER_NAME "PiPixelController\0"
 #define PIXEL_PORTS 4
+#define DEFAULT_SPI_BUS 0
+#define DEFAULT_ACN_ACTIVE 1
 
 typedef struct __string_ctrl
 {

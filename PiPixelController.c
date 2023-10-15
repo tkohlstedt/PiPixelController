@@ -31,6 +31,8 @@ config_t cfg;
 config_setting_t *setting;
 const char *str;
 int universe_start,universe_count,universe_size;
+int spi_bus;
+int acn_active;
 const char *controller_name;
 int pixel_port_count;
 spi_device spi0_0_dev;
@@ -41,8 +43,8 @@ spi_device spi0_3_dev;
 int main()
 {
     // Check what hardware is running
-    rpi_hw = rpi_hw_detect();
-    printf("%s\n\r",rpi_hw->desc);
+//    rpi_hw = rpi_hw_detect();
+//    printf("%s\n\r",rpi_hw->desc);
 
 
     config_init(&cfg);
@@ -92,6 +94,20 @@ int main()
         fprintf(stderr,"No 'pixel_ports' setting in configuration file.\n");
         pixel_port_count = PIXEL_PORTS;
     }
+    if(config_lookup_int(&cfg,"spi_bus",&spi_bus))
+        printf("SPI Bus: %i\n", spi_bus);
+    else
+    {
+        fprintf(stderr,"No 'spi_bus' setting in configuration file.  Defaulting to Bus %d\n",DEFAULT_SPI_BUS);
+        spi_bus = DEFAULT_SPI_BUS;
+    }
+    if(config_lookup_int(&cfg,"listen_acn",&acn_active))
+        printf("ACN Active: %i\n", acn_active);
+    else
+    {
+        fprintf(stderr,"No 'listen_acn' setting in configuration file.  Defaulting to Active %d\n",DEFAULT_ACN_ACTIVE);
+        acn_active = DEFAULT_ACN_ACTIVE;
+    }
     // allocate and clear the pixelbuffer
     pixelBuffer = malloc(PIXEL_BUFFER_SIZE);
     memset(pixelBuffer,0,PIXEL_BUFFER_SIZE);
@@ -106,7 +122,7 @@ int main()
     if(pixel_port_count > 0)
     {
         spi0_0_dev.rpi_hw = rpi_hw;
-        spi0_0_dev.spi_bus = 0;
+        spi0_0_dev.spi_bus = spi_bus;
         spi0_0_dev.spi_cs = 0;
         spi0_0_dev.count = MAX_CHANNELS_PER_DEVICE;
         spi_stat = spi_init(&spi0_0_dev);
@@ -115,7 +131,7 @@ int main()
     if(pixel_port_count > 1)
     {    
         spi0_1_dev.rpi_hw = rpi_hw;
-        spi0_1_dev.spi_bus = 0;
+        spi0_1_dev.spi_bus = spi_bus;
         spi0_1_dev.spi_cs  = 1;
         spi0_1_dev.count = MAX_CHANNELS_PER_DEVICE;
         spi_stat = spi_init(&spi0_1_dev);
@@ -124,7 +140,7 @@ int main()
     if(pixel_port_count >2)
     {    
         spi0_2_dev.rpi_hw = rpi_hw;
-        spi0_2_dev.spi_bus = 0;
+        spi0_2_dev.spi_bus = spi_bus;
         spi0_2_dev.spi_cs = 2;
         spi0_2_dev.count = MAX_CHANNELS_PER_DEVICE;
         spi_stat = spi_init(&spi0_2_dev);
@@ -133,7 +149,7 @@ int main()
     if(pixel_port_count>3)
     {
         spi0_3_dev.rpi_hw = rpi_hw,
-        spi0_3_dev.spi_bus = 0,
+        spi0_3_dev.spi_bus = spi_bus,
         spi0_3_dev.spi_cs  = 3,
         spi0_3_dev.count = MAX_CHANNELS_PER_DEVICE,
         spi_stat = spi_init(&spi0_3_dev);
@@ -141,9 +157,10 @@ int main()
     }
 
     // start the listener
-    return_val = pthread_create(&threads[0],NULL,acn_listen,(void *)&listen_param);
-    printf("ACN start returned %i \n\r",return_val);
-
+    if(acn_active){
+        return_val = pthread_create(&threads[0],NULL,acn_listen,(void *)&listen_param);
+        printf("ACN start returned %i \n\r",return_val);
+    }
     // read the channel configurations from the config file
     for(int bus_ctr =0;bus_ctr<1;bus_ctr++)
     {
