@@ -31,6 +31,8 @@
 #ifndef __RPIHW_H__
 #define __RPIHW_H__
 
+#define ORANGEPI
+
 #include <stdint.h>
 
 typedef struct {

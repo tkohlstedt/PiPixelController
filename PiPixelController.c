@@ -34,6 +34,8 @@ int universe_start,universe_count,universe_size;
 int spi_bus;
 int acn_active;
 const char *controller_name;
+const char *port_type_s;
+output_type port_type;
 int pixel_port_count;
 spi_device spi0_0_dev;
 spi_device spi0_1_dev;
@@ -94,6 +96,24 @@ int main()
         fprintf(stderr,"No 'pixel_ports' setting in configuration file.\n");
         pixel_port_count = PIXEL_PORTS;
     }
+    if(config_lookup_string(&cfg,"port_type",&port_type_s))
+    {
+        printf("Port type: %s\n", port_type_s);
+        if(strncmp("pico",port_type_s,4)==0){
+            port_type = PICO;
+        }else{
+            if(strncmp("pic",port_type_s,3)==0){
+                port_type = PIC;
+            }else{
+                port_type = PICO;
+            }
+        }
+    }
+    else
+    {
+        fprintf(stderr,"No 'port_type' setting in configuration file. ('pico' / 'pic')\n");
+        port_type = PICO;
+    }
     if(config_lookup_int(&cfg,"spi_bus",&spi_bus))
         printf("SPI Bus: %i\n", spi_bus);
     else
@@ -126,6 +146,7 @@ int main()
         spi0_0_dev.spi_cs = 0;
         spi0_0_dev.count = MAX_CHANNELS_PER_DEVICE;
         spi_stat = spi_init(&spi0_0_dev);
+        spi0_0_dev.device_type = port_type;
         printf("SPI Init returned %i \n\r",spi_stat);
     }
     if(pixel_port_count > 1)
@@ -135,6 +156,7 @@ int main()
         spi0_1_dev.spi_cs  = 1;
         spi0_1_dev.count = MAX_CHANNELS_PER_DEVICE;
         spi_stat = spi_init(&spi0_1_dev);
+        spi0_1_dev.device_type = port_type;
         printf("SPI Init returned %i \n\r",spi_stat);
     }
     if(pixel_port_count >2)
@@ -144,6 +166,7 @@ int main()
         spi0_2_dev.spi_cs = 2;
         spi0_2_dev.count = MAX_CHANNELS_PER_DEVICE;
         spi_stat = spi_init(&spi0_2_dev);
+        spi0_2_dev.device_type = port_type;
         printf("SPI Init returned %i \n\r",spi_stat);
     }
     if(pixel_port_count>3)
@@ -153,6 +176,7 @@ int main()
         spi0_3_dev.spi_cs  = 3,
         spi0_3_dev.count = MAX_CHANNELS_PER_DEVICE,
         spi_stat = spi_init(&spi0_3_dev);
+        spi0_3_dev.device_type = port_type;
         printf("SPI Init returned %i \n\r",spi_stat);
     }
 

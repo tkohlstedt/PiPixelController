@@ -13,7 +13,9 @@
 				"-l",
 				"pthread",
 				"-l",
-				"config"
+				"config",
+				"-l",
+				"wiringPi"
 			],
 			"options": {
 				"cwd": "${fileDirname}"
